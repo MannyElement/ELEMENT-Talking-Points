@@ -1,0 +1,1084 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ELEMENT — Presentation Modules</title>
+    <link href="https://fonts.googleapis.com/css2?family=Newsreader:ital,wght@0,300;0,400;0,500;0,600;0,700;1,300;1,400&family=DM+Sans:wght@300;400;500;600;700&family=JetBrains+Mono:wght@300;400&display=swap" rel="stylesheet">
+    <style>
+        *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+        :root {
+            --bg: #0c0f14;
+            --surface: #141820;
+            --surface-2: #1a1f2a;
+            --border: #252b3a;
+            --border-light: #2f3748;
+            --text: #e8eaf0;
+            --text-mid: #a0a8b8;
+            --text-dim: #6b7280;
+            --accent: #4f8ff7;
+            --accent-soft: rgba(79, 143, 247, 0.12);
+            --warm: #e8a44a;
+            --warm-soft: rgba(232, 164, 74, 0.12);
+            --green: #3ecf8e;
+            --green-soft: rgba(62, 207, 142, 0.12);
+            --serif: 'Newsreader', Georgia, serif;
+            --sans: 'DM Sans', -apple-system, sans-serif;
+            --mono: 'JetBrains Mono', monospace;
+        }
+
+        body {
+            font-family: var(--sans);
+            background: var(--bg);
+            color: var(--text);
+            line-height: 1.6;
+            overflow: hidden;
+            height: 100vh;
+        }
+
+        .module-nav {
+            position: fixed;
+            top: 0; left: 0; right: 0;
+            z-index: 100;
+            background: rgba(12, 15, 20, 0.92);
+            backdrop-filter: blur(20px);
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            padding: 0 2rem;
+            height: 56px;
+            gap: 0.25rem;
+        }
+
+        .nav-logo {
+            font-family: var(--sans);
+            font-weight: 700;
+            letter-spacing: 0.15em;
+            font-size: 0.8rem;
+            color: var(--accent);
+            margin-right: 2rem;
+            flex-shrink: 0;
+        }
+
+        .module-tab {
+            padding: 0.5rem 0.85rem;
+            font-size: 0.75rem;
+            font-weight: 500;
+            color: var(--text-dim);
+            cursor: pointer;
+            border-radius: 6px;
+            transition: all 0.2s;
+            white-space: nowrap;
+            border: 1px solid transparent;
+            font-family: var(--sans);
+        }
+
+        .module-tab:hover { color: var(--text-mid); background: var(--surface); }
+
+        .module-tab.active {
+            color: var(--text);
+            background: var(--surface-2);
+            border-color: var(--border);
+        }
+
+        .module-tab .tab-num {
+            color: var(--accent);
+            font-family: var(--mono);
+            font-size: 0.7rem;
+            margin-right: 0.4rem;
+        }
+
+        .slide-container {
+            position: fixed;
+            top: 56px; left: 0; right: 0; bottom: 60px;
+            display: flex;
+            align-items: flex-start;
+            justify-content: center;
+            padding: 3rem 4rem 2rem;
+            overflow-y: auto;
+        }
+
+        .slide {
+            display: none;
+            max-width: 920px;
+            width: 100%;
+            animation: fadeSlide 0.35s ease-out;
+            padding-bottom: 2rem;
+        }
+
+        .slide.active { display: block; }
+
+        @keyframes fadeSlide {
+            from { opacity: 0; transform: translateY(12px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .controls {
+            position: fixed;
+            bottom: 0; left: 0; right: 0;
+            height: 60px;
+            background: rgba(12, 15, 20, 0.92);
+            backdrop-filter: blur(20px);
+            border-top: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 3rem;
+        }
+
+        .slide-counter {
+            font-family: var(--mono);
+            font-size: 0.75rem;
+            color: var(--text-dim);
+        }
+
+        .slide-dots { display: flex; gap: 6px; }
+
+        .slide-dot {
+            width: 8px; height: 8px;
+            border-radius: 50%;
+            background: var(--border);
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .slide-dot.active {
+            background: var(--accent);
+            box-shadow: 0 0 8px rgba(79, 143, 247, 0.4);
+        }
+
+        .slide-dot:hover { background: var(--text-dim); }
+
+        .nav-arrows { display: flex; gap: 0.75rem; }
+
+        .nav-btn {
+            width: 36px; height: 36px;
+            border-radius: 8px;
+            border: 1px solid var(--border);
+            background: var(--surface);
+            color: var(--text-mid);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1rem;
+            transition: all 0.15s;
+        }
+
+        .nav-btn:hover {
+            background: var(--surface-2);
+            color: var(--text);
+            border-color: var(--border-light);
+        }
+
+        .slide-label {
+            font-family: var(--mono);
+            font-size: 0.7rem;
+            letter-spacing: 0.12em;
+            text-transform: uppercase;
+            color: var(--accent);
+            margin-bottom: 1.5rem;
+        }
+
+        .slide h1 {
+            font-family: var(--serif);
+            font-size: 2.4rem;
+            font-weight: 500;
+            line-height: 1.25;
+            margin-bottom: 1.5rem;
+            color: var(--text);
+        }
+
+        .slide h1 em { font-style: italic; color: var(--accent); }
+
+        .slide h2 {
+            font-family: var(--serif);
+            font-size: 1.6rem;
+            font-weight: 500;
+            line-height: 1.3;
+            margin-bottom: 1.25rem;
+            color: var(--text);
+        }
+
+        .slide h3 {
+            font-family: var(--sans);
+            font-size: 0.85rem;
+            font-weight: 600;
+            letter-spacing: 0.06em;
+            text-transform: uppercase;
+            color: var(--text-mid);
+            margin-bottom: 1rem;
+            margin-top: 1.75rem;
+        }
+
+        .slide h3:first-child { margin-top: 0; }
+
+        .slide p {
+            font-size: 1.05rem;
+            line-height: 1.75;
+            color: var(--text-mid);
+            margin-bottom: 1rem;
+            max-width: 740px;
+        }
+
+        .slide p strong { color: var(--text); font-weight: 600; }
+
+        .lead {
+            font-family: var(--serif);
+            font-size: 1.3rem;
+            line-height: 1.7;
+            color: var(--text-mid);
+            font-weight: 300;
+        }
+
+        .point-list { list-style: none; margin: 1.25rem 0; }
+
+        .point-list li {
+            padding: 0.5rem 0 0.5rem 1.5rem;
+            position: relative;
+            color: var(--text-mid);
+            font-size: 1rem;
+            line-height: 1.6;
+        }
+
+        .point-list li::before {
+            content: '';
+            position: absolute;
+            left: 0; top: 0.95rem;
+            width: 6px; height: 6px;
+            border-radius: 50%;
+            background: var(--accent);
+            opacity: 0.7;
+        }
+
+        .point-list li strong { color: var(--text); font-weight: 600; }
+
+        .callout {
+            background: var(--surface);
+            border-left: 3px solid var(--accent);
+            padding: 1.25rem 1.75rem;
+            margin: 1.5rem 0;
+            border-radius: 0 8px 8px 0;
+        }
+
+        .callout p {
+            font-family: var(--serif);
+            font-size: 1.15rem;
+            font-style: italic;
+            color: var(--text);
+            margin-bottom: 0;
+            line-height: 1.65;
+        }
+
+        .callout.warm { border-left-color: var(--warm); }
+        .callout.green { border-left-color: var(--green); }
+
+        .grid-2 {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1.25rem;
+            margin: 1.5rem 0;
+        }
+
+        .grid-3 {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 1rem;
+            margin: 1.5rem 0;
+        }
+
+        .card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            padding: 1.25rem 1.5rem;
+        }
+
+        .card h4 {
+            font-family: var(--sans);
+            font-size: 0.9rem;
+            font-weight: 600;
+            color: var(--text);
+            margin-bottom: 0.5rem;
+        }
+
+        .card p {
+            font-size: 0.9rem;
+            line-height: 1.55;
+            color: var(--text-dim);
+            margin-bottom: 0;
+        }
+
+        .card .point-list li { font-size: 0.88rem; padding: 0.35rem 0 0.35rem 1.3rem; }
+        .card .point-list li::before { top: 0.75rem; width: 5px; height: 5px; }
+
+        .card.accent-border { border-color: var(--accent); border-width: 1px 1px 1px 3px; }
+        .card.warm-border { border-color: var(--warm); border-width: 1px 1px 1px 3px; }
+        .card.green-border { border-color: var(--green); border-width: 1px 1px 1px 3px; }
+
+        .tag {
+            display: inline-block;
+            font-family: var(--mono);
+            font-size: 0.65rem;
+            letter-spacing: 0.08em;
+            padding: 0.2rem 0.6rem;
+            border-radius: 4px;
+            text-transform: uppercase;
+            margin-bottom: 0.5rem;
+        }
+
+        .tag.blue { background: var(--accent-soft); color: var(--accent); }
+        .tag.warm { background: var(--warm-soft); color: var(--warm); }
+        .tag.green { background: var(--green-soft); color: var(--green); }
+
+        .small-note {
+            font-size: 0.8rem;
+            color: var(--text-dim);
+            font-style: italic;
+            margin-top: 0.75rem;
+        }
+
+        .archetype-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 0.75rem;
+            margin: 1.25rem 0;
+        }
+
+        .archetype-chip {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 0.75rem 1rem;
+            text-align: center;
+        }
+
+        .archetype-chip .arch-name {
+            font-size: 0.82rem;
+            font-weight: 600;
+            color: var(--text);
+            margin-bottom: 0.3rem;
+        }
+
+        .archetype-chip .arch-ex-label {
+            font-size: 0.62rem;
+            font-weight: 700;
+            color: var(--text-dim);
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+        }
+
+        .archetype-chip .arch-ex {
+            font-size: 0.72rem;
+            color: var(--text-dim);
+            font-style: italic;
+        }
+
+        .layer-stack {
+            display: flex;
+            flex-direction: column;
+            gap: 0;
+            margin: 1.25rem 0;
+            max-width: 600px;
+        }
+
+        .layer {
+            padding: 1rem 1.5rem;
+            border: 1px solid var(--border);
+        }
+
+        .layer:first-child { border-radius: 10px 10px 0 0; }
+        .layer:last-child { border-radius: 0 0 10px 10px; }
+        .layer + .layer { border-top: none; }
+
+        .layer .layer-label {
+            font-family: var(--mono);
+            font-size: 0.65rem;
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+            color: var(--accent);
+            margin-bottom: 0.3rem;
+        }
+
+        .layer .layer-desc { font-size: 0.88rem; color: var(--text-mid); }
+
+        .layer.l3 { background: var(--accent-soft); border-color: rgba(79,143,247,0.25); }
+        .layer.l2 { background: var(--surface); }
+        .layer.l1 { background: var(--surface-2); }
+
+        .timeline-v {
+            margin: 1.25rem 0;
+            padding-left: 1.5rem;
+            border-left: 2px solid var(--border);
+        }
+
+        .timeline-v .tl-item {
+            padding: 0.75rem 0 0.75rem 1.25rem;
+            position: relative;
+        }
+
+        .timeline-v .tl-item::before {
+            content: '';
+            position: absolute;
+            left: -1.75rem; top: 1.1rem;
+            width: 10px; height: 10px;
+            border-radius: 50%;
+            background: var(--accent);
+            border: 2px solid var(--bg);
+        }
+
+        .timeline-v .tl-item.done::before { background: var(--green); }
+        .timeline-v .tl-item.active::before {
+            background: var(--warm);
+            box-shadow: 0 0 8px rgba(232, 164, 74, 0.5);
+        }
+
+        .tl-title { font-size: 0.9rem; font-weight: 600; color: var(--text); }
+        .tl-desc { font-size: 0.82rem; color: var(--text-dim); margin-top: 0.15rem; }
+
+        .app-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 0.75rem;
+            margin: 1.25rem 0;
+        }
+
+        .app-chip {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 1rem 1.25rem;
+            text-align: center;
+        }
+
+        .app-chip .app-icon { font-size: 1.4rem; margin-bottom: 0.4rem; }
+        .app-chip .app-name { font-size: 0.85rem; font-weight: 600; color: var(--text); margin-bottom: 0.2rem; }
+        .app-chip .app-desc { font-size: 0.72rem; color: var(--text-dim); line-height: 1.4; }
+
+        .key-hint {
+            position: fixed;
+            bottom: 70px; right: 3rem;
+            font-family: var(--mono);
+            font-size: 0.65rem;
+            color: var(--text-dim);
+            opacity: 0.5;
+        }
+    </style>
+</head>
+<body>
+
+<nav class="module-nav" id="moduleNav">
+    <div class="nav-logo">ELEMENT</div>
+    <div class="module-tab active" data-module="1"><span class="tab-num">01</span>What We Are</div>
+    <div class="module-tab" data-module="2"><span class="tab-num">02</span>How It Works</div>
+    <div class="module-tab" data-module="3"><span class="tab-num">03</span>Domain Archetypes</div>
+    <div class="module-tab" data-module="4"><span class="tab-num">04</span>Why ELEMENT Wins</div>
+    <div class="module-tab" data-module="5"><span class="tab-num">05</span>Understanding²</div>
+    <div class="module-tab" data-module="6"><span class="tab-num">06</span>Where We Are</div>
+</nav>
+
+<div class="slide-container" id="slideContainer">
+
+    <!-- ══════════════════════════════════════════════ -->
+    <!-- MODULE 1: WHAT ELEMENT IS (3 slides)          -->
+    <!-- ══════════════════════════════════════════════ -->
+    <div class="slide active" data-module="1" data-slide="1">
+        <div class="slide-label">Module 01 — What ELEMENT Is</div>
+        <h1>Understanding is the most important<br>thing nobody measures.</h1>
+        <p class="lead">
+            We hire based on credentials. We certify based on memorization. We promote based on experience.
+            But what we actually care about — whether someone <strong>genuinely understands</strong> what they're doing — we mostly just guess.
+        </p>
+        <div class="callout">
+            <p>ELEMENT measures understanding. Through natural conversation, powered by a multi-agent AI architecture grounded in cognitive science and epistemology.</p>
+        </div>
+    </div>
+
+    <div class="slide" data-module="1" data-slide="2">
+        <div class="slide-label">Module 01 — What ELEMENT Is</div>
+        <h2>The core distinction</h2>
+        <div class="grid-3">
+            <div class="card">
+                <h4>Knowledge</h4>
+                <p>What you can recall. Facts, definitions, procedures. Necessary but insufficient.</p>
+            </div>
+            <div class="card">
+                <h4>Experience</h4>
+                <p>What you've been exposed to. Years on the job. Doesn't guarantee you learned from it.</p>
+            </div>
+            <div class="card accent-border">
+                <h4>Understanding</h4>
+                <p>Can you <em>use</em> what you know? Reason with it? Apply it to novel situations? Recognize what you don't know?</p>
+            </div>
+        </div>
+        <p>Credentials measure knowledge and experience. ELEMENT is designed to measure understanding — the thing that actually predicts whether someone can do the job, solve the problem, or make the right call.</p>
+        <p>This matters more than ever. In the AI era, understanding is what's needed to work effectively alongside AI — to know when to trust its output, when to question it, and how to direct it. That's what everyone is going to need to do more and more in the coming years, and it's precisely the capacity that traditional assessments don't touch.</p>
+    </div>
+
+    <div class="slide" data-module="1" data-slide="3">
+        <div class="slide-label">Module 01 — What ELEMENT Is</div>
+        <h2>What the user experiences</h2>
+        <p>A natural, adaptive conversation. No test anxiety. No multiple-choice guessing strategies. No studying for the format.</p>
+        <ul class="point-list">
+            <li>You talk about the subject the way you'd talk to a knowledgeable colleague</li>
+            <li>The conversation adapts in real time — probing where you're strong, exploring where you're uncertain</li>
+            <li>Behind the scenes, multiple AI agents analyze every response in parallel, building consensus</li>
+            <li>The result: a rich, multi-dimensional portrait of your understanding of a given topic — combining <strong>qualitative narrative insights</strong> with <strong>quantitative analytical data</strong>, allowing for both personalized feedback and meaningful data analysis across individuals and groups</li>
+        </ul>
+        <div class="callout warm">
+            <p>We call this "assessment invisibility." The person being assessed barely feels like they're being tested. They just feel like they're having an interesting conversation.</p>
+        </div>
+    </div>
+
+    <!-- ══════════════════════════════════════════════ -->
+    <!-- MODULE 2: HOW IT WORKS (3 slides)             -->
+    <!-- ══════════════════════════════════════════════ -->
+    <div class="slide" data-module="2" data-slide="1">
+        <div class="slide-label">Module 02 — How It Works</div>
+        <h1>A <em>system</em>, not a chatbot.</h1>
+        <p class="lead">
+            Most AI assessment tools are a single language model asking questions and grading answers.
+            ELEMENT is something fundamentally different.
+        </p>
+        <p>It's a multi-agent architecture where specialized AI systems work in parallel, each with a distinct analytical role, converging on consensus through structured protocols. But the power isn't just in the parallelism — it's in the <strong>deep theoretical framework</strong> built into each agent, the carefully orchestrated architecture that coordinates them, and the way the entire system is designed to maximize depth and accuracy while scaling and adapting to essentially any field where understanding is possible.</p>
+        <p>The difference is like the difference between one person interviewing you and an expert panel — except the panel operates simultaneously, invisibly, and with perfect consistency.</p>
+    </div>
+
+    <div class="slide" data-module="2" data-slide="2">
+        <div class="slide-label">Module 02 — How It Works</div>
+        <h2>A peek at the underlying theoretical framework</h2>
+        <p>ELEMENT doesn't produce a single score. It evaluates understanding across five pillars, each capturing a genuinely distinct cognitive capacity:</p>
+        <div class="grid-2" style="margin-top: 1rem;">
+            <div class="card">
+                <span class="tag blue">Knowing That</span>
+                <h4>Declarative</h4>
+                <p>Command of the domain's facts, concepts, and their relationships</p>
+            </div>
+            <div class="card">
+                <span class="tag blue">Knowing How</span>
+                <h4>Procedural</h4>
+                <p>Ability to execute methods, solve problems, apply techniques</p>
+            </div>
+            <div class="card">
+                <span class="tag blue">Knowing Why &amp; When</span>
+                <h4>Conditional</h4>
+                <p>Grasping why things work, and under what conditions they apply</p>
+            </div>
+            <div class="card">
+                <span class="tag blue">Creating</span>
+                <h4>Generative</h4>
+                <p>Ability to extend, synthesize, and produce novel contributions</p>
+            </div>
+        </div>
+        <div class="card" style="max-width: 445px;">
+            <span class="tag blue">Self-Awareness</span>
+            <h4>Metacognitive</h4>
+            <p>Awareness of one's own understanding — and its limits</p>
+        </div>
+        <p class="small-note">These emerge from cognitive science research on expertise and track real differences in how understanding manifests across domains.</p>
+    </div>
+
+    <div class="slide" data-module="2" data-slide="3">
+        <div class="slide-label">Module 02 — How It Works</div>
+        <h2>Consensus, not calculation</h2>
+        <p>Here's what makes ELEMENT fundamentally different from scoring a test:</p>
+        <ul class="point-list">
+            <li><strong>Multiple agents analyze every response independently</strong> — each bringing a different analytical lens</li>
+            <li><strong>They must converge on a consensus</strong> — disagreements get resolved through structured protocols, not averaging</li>
+            <li><strong>Validation runs continuously</strong> — a dedicated agent checks for internal consistency, gaming attempts, and assessment integrity</li>
+            <li><strong>The conversation adapts in real time</strong> — guided by what the agents are learning about you as they go</li>
+        </ul>
+        <p>The result is something closer to the judgment of a thoughtful expert panel than to a test score — but with perfect consistency and scalability.</p>
+    </div>
+
+    <!-- ══════════════════════════════════════════════ -->
+    <!-- MODULE 3: DOMAIN ARCHETYPES (4 slides)        -->
+    <!-- ══════════════════════════════════════════════ -->
+    <div class="slide" data-module="3" data-slide="1">
+        <div class="slide-label">Module 03 — Domain Archetypes</div>
+        <h1>Not all understanding<br>looks the <em>same</em>.</h1>
+        <p class="lead">
+            Understanding cardiology is fundamentally different from understanding number theory.
+            The cognitive skills that matter, the way expertise develops, what "mastery" even means —
+            these vary by domain in deep and systematic ways.
+        </p>
+        <p>Most assessment tools ignore this. ELEMENT builds it into the architecture.</p>
+    </div>
+
+    <div class="slide" data-module="3" data-slide="2">
+        <div class="slide-label">Module 03 — Domain Archetypes</div>
+        <h2>Eight cognitive archetypes</h2>
+        <p>We've identified eight fundamental patterns in how understanding manifests across broad categories of topics:</p>
+        <div class="archetype-grid">
+            <div class="archetype-chip">
+                <div class="arch-name">Theoretical</div>
+                <div class="arch-ex-label">Ex.</div>
+                <div class="arch-ex">Pure Math, Philosophy ...</div>
+            </div>
+            <div class="archetype-chip">
+                <div class="arch-name">Analytical / Interpretive</div>
+                <div class="arch-ex-label">Ex.</div>
+                <div class="arch-ex">Law, Literary Criticism ...</div>
+            </div>
+            <div class="archetype-chip">
+                <div class="arch-name">Technical / Procedural</div>
+                <div class="arch-ex-label">Ex.</div>
+                <div class="arch-ex">Software Engineering, Accounting ...</div>
+            </div>
+            <div class="archetype-chip">
+                <div class="arch-name">Scientific / Empirical</div>
+                <div class="arch-ex-label">Ex.</div>
+                <div class="arch-ex">Physics, Biology ...</div>
+            </div>
+            <div class="archetype-chip">
+                <div class="arch-name">Clinical / Applied</div>
+                <div class="arch-ex-label">Ex.</div>
+                <div class="arch-ex">Medicine, Diagnostics ...</div>
+            </div>
+            <div class="archetype-chip">
+                <div class="arch-name">Strategic / Systems</div>
+                <div class="arch-ex-label">Ex.</div>
+                <div class="arch-ex">Business Strategy, Policy ...</div>
+            </div>
+            <div class="archetype-chip">
+                <div class="arch-name">Artistic / Creative</div>
+                <div class="arch-ex-label">Ex.</div>
+                <div class="arch-ex">Music, Visual Arts ...</div>
+            </div>
+            <div class="archetype-chip">
+                <div class="arch-name">Factual / Declarative</div>
+                <div class="arch-ex-label">Ex.</div>
+                <div class="arch-ex">Trivia, Geography ...</div>
+            </div>
+        </div>
+        <p>Each archetype has a distinct cognitive signature — different pillar weightings, different progression patterns, different ceilings, and different markers of genuine expertise.</p>
+    </div>
+
+    <div class="slide" data-module="3" data-slide="3">
+        <div class="slide-label">Module 03 — Domain Archetypes</div>
+        <h2>A three-layer modular architecture</h2>
+        <p>This is how ELEMENT scales to any domain without sacrificing precision:</p>
+        <div class="layer-stack">
+            <div class="layer l1">
+                <div class="layer-label">Layer 1 — Universal Core</div>
+                <div class="layer-desc"><strong>Foundational assessment logic.</strong> The principles, protocols, and structures that govern every ELEMENT assessment regardless of domain.</div>
+            </div>
+            <div class="layer l2">
+                <div class="layer-label">Layer 2 — Archetype</div>
+                <div class="layer-desc"><strong>Cognitive style specialization.</strong> Each archetype configures how the agents think about understanding — what to probe, what progression looks like, where the critical thresholds are.</div>
+            </div>
+            <div class="layer l3">
+                <div class="layer-label">Layer 3 — Domain-Specific</div>
+                <div class="layer-desc"><strong>Certified Assessment Protocols.</strong> Specialized knowledge, custom topics, calibrated benchmarks for a specific field. E.g., "Capital Markets Law" or "HVAC Diagnostics."</div>
+            </div>
+        </div>
+        <p>Layer 1 is the same everywhere. Layer 2 gives us 8 cognitive templates. Layer 3 lets us go deep into any specific field. The result: infinite customizability with structural consistency.</p>
+    </div>
+
+    <div class="slide" data-module="3" data-slide="4">
+        <div class="slide-label">Module 03 — Domain Archetypes</div>
+        <h2>Why this matters</h2>
+        <div class="grid-2">
+            <div class="card accent-border">
+                <h4>For precision</h4>
+                <p>A law firm and a hospital need fundamentally different assessment approaches. The archetype system ensures each gets the right cognitive model, not a one-size-fits-all template.</p>
+            </div>
+            <div class="card warm-border">
+                <h4>For scalability</h4>
+                <p>A new domain doesn't require building from scratch. Select the archetype, customize Layer 3, and you have a rigorous assessment protocol in a fraction of the time.</p>
+            </div>
+            <div class="card green-border">
+                <h4>For partners</h4>
+                <p>White-label clients and platform integrations get assessments that feel native to their industry — because the underlying cognitive model actually is.</p>
+            </div>
+            <div class="card">
+                <h4>For research</h4>
+                <p>The archetypes themselves are a contribution to how we think about domain-specific cognition. They encode real epistemological insights about the structure of expertise.</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- ══════════════════════════════════════════════ -->
+    <!-- MODULE 4: WHAT MAKES ELEMENT WIN (5 slides)   -->
+    <!-- ══════════════════════════════════════════════ -->
+    <div class="slide" data-module="4" data-slide="1">
+        <div class="slide-label">Module 04 — What Makes ELEMENT Win</div>
+        <h1>Focus, rigor, and<br><em>breadth of application</em>.</h1>
+        <p class="lead">
+            ELEMENT is pursuing one thing — understanding how to measure understanding — with a level of narrow focus, theoretical rigor, and architectural sophistication that sets us apart. We want to nail this one thing better than anyone else.
+        </p>
+    </div>
+
+    <div class="slide" data-module="4" data-slide="2">
+        <div class="slide-label">Module 04 — What Makes ELEMENT Win</div>
+        <h2>First mover, moving fast</h2>
+        <p>We're currently ahead in this space, and we're compounding that advantage:</p>
+        <div class="grid-2">
+            <div class="card accent-border">
+                <h4>Theoretical depth</h4>
+                <p>A philosophically serious framework, developed with world-class academic collaborators. Not prompt engineering — genuine epistemological grounding that takes years to develop.</p>
+            </div>
+            <div class="card warm-border">
+                <h4>Architectural sophistication</h4>
+                <p>Multi-agent consensus, 8 domain archetypes, three-layer modularity, assessment invisibility. This is a system, not a wrapper around an LLM.</p>
+            </div>
+            <div class="card green-border">
+                <h4>Academic validation</h4>
+                <p>Leading epistemologists, data scientists, and education experts engaged with our work. Peer-reviewed foundations create credibility that can't be faked.</p>
+            </div>
+            <div class="card">
+                <h4>Speed to market</h4>
+                <p>Working platform, active commercial conversations, pilot launching, certified assessments ready. We're not waiting — we're building the brand now.</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="slide" data-module="4" data-slide="3">
+        <div class="slide-label">Module 04 — What Makes ELEMENT Win</div>
+        <h2>The standardization opportunity</h2>
+        <p>Here's a key insight about assessment:</p>
+        <div class="callout">
+            <p>The real value of the SAT or GRE isn't that they're fundamentally better than all other exams. It's that everyone takes them — so they've become the standard, enabling meaningful comparison and benchmarking across individuals and institutions.</p>
+        </div>
+        <p>ELEMENT has the opportunity to establish that kind of standard for <strong>understanding measurement</strong>. By moving fast and building trust with early adopters across diverse fields, we can become the benchmark — the common language for how understanding is evaluated, compared, and discussed.</p>
+        <p>Once assessments are widely adopted, comparability itself becomes an enormous source of value.</p>
+    </div>
+
+    <div class="slide" data-module="4" data-slide="4">
+        <div class="slide-label">Module 04 — What Makes ELEMENT Win</div>
+        <h2>From individual assessment to organizational intelligence</h2>
+        <p>Individual assessments are valuable. But the data becomes <em>dramatically</em> more valuable when you combine it at the group level:</p>
+        <ul class="point-list">
+            <li><strong>Organizational Intelligence</strong> — map what your people collectively understand, find the gaps, make strategic decisions about training, hiring, and delegation</li>
+            <li><strong>Team composition</strong> — understand how understanding is distributed across a team, identify complementary strengths and dangerous blind spots</li>
+            <li><strong>Training ROI</strong> — before and after assessment to measure whether training programs actually moved the needle on understanding, not just completion</li>
+            <li><strong>Industry benchmarking</strong> — how does your organization's understanding profile compare to peers? Where are you ahead, and where are you behind?</li>
+        </ul>
+        <p>This is where the standardization advantage compounds. The more organizations using ELEMENT, the richer the benchmarking data, the more valuable the platform becomes for every user.</p>
+    </div>
+
+    <div class="slide" data-module="4" data-slide="5">
+        <div class="slide-label">Module 04 — What Makes ELEMENT Win</div>
+        <h2>Multi-faceted applications</h2>
+        <p>The same core technology addresses multiple massive markets:</p>
+        <div class="app-grid">
+            <div class="app-chip">
+                <div class="app-icon">⚖️</div>
+                <div class="app-name">Hiring</div>
+                <div class="app-desc">Verify genuine understanding before you hire — not just credentials and interview performance</div>
+            </div>
+            <div class="app-chip">
+                <div class="app-icon">🏢</div>
+                <div class="app-name">Org Intelligence</div>
+                <div class="app-desc">Map your organization's collective understanding to make better strategic decisions</div>
+            </div>
+            <div class="app-chip">
+                <div class="app-icon">📋</div>
+                <div class="app-name">Certification</div>
+                <div class="app-desc">Next-generation professional credentials that actually prove understanding</div>
+            </div>
+            <div class="app-chip">
+                <div class="app-icon">🔧</div>
+                <div class="app-name">Skills Verification</div>
+                <div class="app-desc">Trades, technical roles, and regulated industries where verified competence matters</div>
+            </div>
+            <div class="app-chip">
+                <div class="app-icon">🎓</div>
+                <div class="app-name">Education</div>
+                <div class="app-desc">Move beyond grades and test scores to understand what students actually understand</div>
+            </div>
+            <div class="app-chip">
+                <div class="app-icon">🤖</div>
+                <div class="app-name">AI-to-AI Assessment</div>
+                <div class="app-desc">Evaluate AI systems' understanding — an emerging market with no established standard</div>
+            </div>
+        </div>
+        <p class="small-note">Each application reinforces the others. Data from hiring assessments enriches organizational intelligence. Certification builds the benchmarking standard. AI-to-AI assessment opens an entirely new research frontier.</p>
+    </div>
+
+    <!-- ══════════════════════════════════════════════ -->
+    <!-- MODULE 5: UNDERSTANDING UNDERSTANDING (6 sl)  -->
+    <!-- ══════════════════════════════════════════════ -->
+    <div class="slide" data-module="5" data-slide="1">
+        <div class="slide-label">Module 05 — Understanding Understanding</div>
+        <h1>The deeper mission.</h1>
+        <p class="lead">
+            ELEMENT is an assessment tool. But it's built on a thesis about the nature of understanding itself.
+            And we think that thesis — and the research program it points toward —
+            may be as valuable as the product.
+        </p>
+        <div class="callout">
+            <p>We are not just building a tool to measure understanding. We are pursuing a serious, interdisciplinary effort to understand understanding.</p>
+        </div>
+    </div>
+
+    <div class="slide" data-module="5" data-slide="2">
+        <div class="slide-label">Module 05 — Understanding Understanding</div>
+        <h2>The conversational signature thesis</h2>
+        <p>ELEMENT rests on a core claim:</p>
+        <div class="callout">
+            <p>The presence of genuine understanding produces a detectable conversational signature — patterns of reasoning, flexibility, self-correction, and metacognitive awareness that emerge naturally in dialogue.</p>
+        </div>
+        <p>This signature is <strong>sufficient but not necessary</strong> — meaning that when it's present, we can be confident understanding is present. For the vast majority of practical purposes, this is effectively the same thing as measuring real understanding. The rare edge cases — someone who genuinely understands deeply but struggles to express it conversationally — are the kinds of limitations that every assessment method faces in some form. What makes ELEMENT's approach a genuine leap forward is that it combines the depth, adaptability, and diagnostic power of a personalized Socratic dialogue with the scalability and consistency of standardized testing. No prior method has been able to do both.</p>
+    </div>
+
+    <div class="slide" data-module="5" data-slide="3">
+        <div class="slide-label">Module 05 — Understanding Understanding</div>
+        <h2>The pragmatist foundation</h2>
+        <p>ELEMENT's theoretical approach borrows from Turing. When faced with "can machines think?", Turing didn't answer the metaphysical question — he replaced it with a functional one.</p>
+        <p>We do the same with understanding. Instead of asking <em>"does this person really understand?"</em> — with all the metaphysical baggage — we ask:</p>
+        <div class="callout warm">
+            <p>Does this person exhibit the functional capacities we care about when we care about understanding? Can they reason flexibly, recognize novel situations, catch errors, know what they don't know?</p>
+        </div>
+        <p>We measure understanding <strong>"insofar as it would be useful to others."</strong> That framing is deliberate. It's philosophically defensible, practically meaningful, and it keeps us honest about what we're claiming.</p>
+    </div>
+
+    <div class="slide" data-module="5" data-slide="4">
+        <div class="slide-label">Module 05 — Understanding Understanding</div>
+        <h2>Archetypes as epistemological categories</h2>
+        <p>The eight domain archetypes aren't just a product feature. They encode a genuine epistemological insight:</p>
+        <ul class="point-list">
+            <li><strong>Understanding manifests differently across cognitive domains</strong> — what it means to "understand" in a theoretical domain is structurally different from what it means in a clinical one</li>
+            <li><strong>Different pillar weightings reflect different epistemic virtues</strong> — law prizes interpretive reasoning; medicine prizes diagnostic judgment; pure math prizes generative insight</li>
+            <li><strong>Progression follows domain-specific patterns</strong> — the critical thresholds where real understanding separates from surface competence occur at different places in different archetypes</li>
+            <li><strong>Ceilings vary</strong> — not every domain admits of the same depth of understanding, and that itself is an interesting claim about the structure of knowledge</li>
+        </ul>
+        <p>These are testable philosophical claims. As ELEMENT scales across domains, the data we collect either confirms or challenges these structural assumptions — making the platform itself a kind of empirical epistemology.</p>
+    </div>
+
+    <div class="slide" data-module="5" data-slide="5">
+        <div class="slide-label">Module 05 — Understanding Understanding</div>
+        <h2>Concepts, understanding, and AI interpretability</h2>
+        <p>Here is where things get genuinely novel.</p>
+        <p>With humans, we can only observe behavior. With AI systems, we can assess behaviorally <em>and</em> inspect internals. This opens a unique research angle:</p>
+        <div class="grid-2">
+            <div class="card accent-border">
+                <h4>What is a "concept"?</h4>
+                <p>Inside an LLM, a concept might be described as <em>something which can be understood by an agent</em>. If so, the question of what concepts are and the question of what understanding is become deeply intertwined. If the presence of understanding can be measured via its conversational signature, then understanding itself might become a diviner for the presence of underlying concepts being understood — even when those concepts evade human comprehension due to sheer size or complexity.</p>
+            </div>
+            <div class="card warm-border">
+                <h4>The interpretability question</h4>
+                <p>As AI systems do increasingly complex work, their outputs will only be interpretable if they still operate through something like "concepts" which they "understand" and compose into theories and frameworks. If that's the case, understanding may be foundational to AI itself — not just a human trait to measure.</p>
+            </div>
+        </div>
+        <p>The alternative — that theory becomes obsolete, replaced by brute-force pattern matching — seems unlikely. The remarkable success of LLMs appears to depend on something very much like conceptual reasoning. If understanding <em>can</em> be rigorously described, that is worth studying from the perspectives of physics, mathematics, machine learning, and philosophy simultaneously.</p>
+    </div>
+
+    <div class="slide" data-module="5" data-slide="6">
+        <div class="slide-label">Module 05 — Understanding Understanding</div>
+        <h2>Contributing to a rigorous theory of understanding</h2>
+        <p>Ultimately, ELEMENT's mission is not just to build a better assessment tool. It is to seriously pursue the question:</p>
+        <div class="callout">
+            <p>What is understanding? Can it be rigorously described? What are its structures, its varieties, its signatures, its limits?</p>
+        </div>
+        <p>The assessment platform is the first — and currently the most commercially viable — branch of this endeavor. But the research program it points toward is much larger:</p>
+        <ul class="point-list">
+            <li><strong>Empirical epistemology</strong> — using assessment data across domains, levels, and archetypes to study the structure of understanding itself</li>
+            <li><strong>AI interpretability</strong> — bridging ELEMENT's behavioral assessment with mechanistic analysis of what "understanding" looks like inside neural networks</li>
+            <li><strong>Cross-disciplinary theory</strong> — developing frameworks that connect philosophical accounts of understanding with cognitive science, information theory, and machine learning</li>
+            <li><strong>AI-to-AI assessment</strong> — evaluating AI systems' understanding using the same framework we use for humans, creating a unique research instrument</li>
+        </ul>
+        <p class="small-note">This research agenda is what could make ELEMENT interesting to serious academics — and what could attract grant funding from institutions interested in AI, epistemology, or the intersection of both.</p>
+    </div>
+
+    <!-- ══════════════════════════════════════════════ -->
+    <!-- MODULE 6: WHERE WE ARE (5 slides)             -->
+    <!-- ══════════════════════════════════════════════ -->
+    <div class="slide" data-module="6" data-slide="1">
+        <div class="slide-label">Module 06 — Where We Are Now</div>
+        <h1>Momentum.</h1>
+        <p class="lead">ELEMENT isn't just a concept or a deck. It's a working platform with real architecture, real users, and real commercial conversations happening now.</p>
+    </div>
+
+    <div class="slide" data-module="6" data-slide="2">
+        <div class="slide-label">Module 06 — Where We Are Now</div>
+        <h2>What's built</h2>
+        <div class="grid-2">
+            <div>
+                <h3>Platform</h3>
+                <ul class="point-list">
+                    <li>Beta platform live, with user accounts, assessment customization, and assignment workflows</li>
+                    <li>Real-time multi-agent assessment engine</li>
+                    <li>Rich reporting with qualitative narrative insights and quantitative analytical data</li>
+                </ul>
+            </div>
+            <div>
+                <h3>Architecture</h3>
+                <ul class="point-list">
+                    <li><strong>All 8 domain archetypes complete</strong> — full agent suites for every cognitive style</li>
+                    <li>Capability to spin up custom assessments in minutes for any domain</li>
+                    <li>A growing library of meticulously constructed <strong>Certified Assessment Protocols</strong> in Capital Markets Law, HVAC Diagnostics, Number Theory, Machine Learning, Cardiology, and more</li>
+                    <li>Three-layer modular system fully operational</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <div class="slide" data-module="6" data-slide="3">
+        <div class="slide-label">Module 06 — Where We Are Now</div>
+        <h2>Pipeline &amp; traction</h2>
+        <div class="timeline-v">
+            <div class="tl-item active">
+                <div class="tl-title">Mini-Pilot Study</div>
+                <div class="tl-desc">Participants across multiple domains. Launching soon. Will produce the first formal validation data.</div>
+            </div>
+            <div class="tl-item active">
+                <div class="tl-title">Bevilacqua Law Firm</div>
+                <div class="tl-desc">Top capital markets law firm actively evaluating ELEMENT for hiring assessment. Our first real-world enterprise use case.</div>
+            </div>
+            <div class="tl-item active">
+                <div class="tl-title">ServiceTitan</div>
+                <div class="tl-desc">Pitch in development for trades professional skill verification. Custom certified assessment built and ready. Direct path to C-suite.</div>
+            </div>
+            <div class="tl-item active">
+                <div class="tl-title">Ottawa Education Group</div>
+                <div class="tl-desc">Canadian corporate training firm interested in white-labeling ELEMENT into their service offerings. Validates the B2B2B channel model.</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="slide" data-module="6" data-slide="4">
+        <div class="slide-label">Module 06 — Where We Are Now</div>
+        <h2>Academic &amp; advisory</h2>
+        <div class="grid-2">
+            <div class="card accent-border">
+                <h4>Dr. Michael Hannon</h4>
+                <p>University of Nottingham. One of the world's leading epistemologists. Advisor to ELEMENT and planning an academic paper examining ELEMENT's theoretical framework.</p>
+            </div>
+            <div class="card warm-border">
+                <h4>Alan Gelband</h4>
+                <p>Founding investor and strategic advisor. Over 50 years in investment banking, analysis, and strategic advisory. Founded Gelband &amp; Company in 1975; the FINRA-registered firm has completed 100+ deals. ACG Lifetime Achievement Award recipient and former ACG global president. Provides financial strategy, investor network, and operational infrastructure for ELEMENT.</p>
+            </div>
+            <div class="card green-border">
+                <h4>Lawrence Pendergast</h4>
+                <p>Former NYC education official. Advisor bringing institutional education expertise and policy perspective.</p>
+            </div>
+            <div class="card">
+                <h4>Dr. Andrew Parker</h4>
+                <p>EdTech veteran. Advisor with deep experience in education technology product development and market strategy.</p>
+            </div>
+        </div>
+        <p class="small-note">Academic endorsement from this caliber of thinkers is a credibility asset that money can't buy — and it's happening because the intellectual foundations are genuine.</p>
+    </div>
+
+    <div class="slide" data-module="6" data-slide="5">
+        <div class="slide-label">Module 06 — Where We Are Now</div>
+        <h2>The road ahead</h2>
+        <div class="grid-2">
+            <div class="card">
+                <span class="tag warm">Near Term</span>
+                <h4>Weeks ahead</h4>
+                <ul class="point-list">
+                    <li>Launch mini-pilot, collect first validation data</li>
+                    <li>Bevilacqua begins using Capital Markets Law assessment</li>
+                    <li>ServiceTitan pitch to executive team</li>
+                    <li>OEG white-label scope finalized</li>
+                    <li>Results page and platform UX refinements</li>
+                </ul>
+            </div>
+            <div class="card">
+                <span class="tag blue">Medium Term</span>
+                <h4>Months ahead</h4>
+                <ul class="point-list">
+                    <li>Seed round ($1.5M target)</li>
+                    <li>Expand certified assessment library</li>
+                    <li>Academic papers and collaborations</li>
+                    <li>First enterprise deployments</li>
+                    <li>AI-to-AI assessment capability development</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+<div class="controls">
+    <div class="slide-counter" id="slideCounter">1 / 3</div>
+    <div class="slide-dots" id="slideDots"></div>
+    <div class="nav-arrows">
+        <button class="nav-btn" id="prevBtn" onclick="navigate(-1)">←</button>
+        <button class="nav-btn" id="nextBtn" onclick="navigate(1)">→</button>
+    </div>
+</div>
+
+<div class="key-hint">← → arrow keys to navigate</div>
+
+<script>
+    let currentModule = 1;
+    let currentSlide = 1;
+    const totalModules = 6;
+
+    function getModuleSlides(mod) {
+        return document.querySelectorAll(`.slide[data-module="${mod}"]`);
+    }
+
+    function getAllSlides() {
+        return document.querySelectorAll('.slide');
+    }
+
+    function showSlide(mod, slide) {
+        getAllSlides().forEach(s => s.classList.remove('active'));
+        const target = document.querySelector(`.slide[data-module="${mod}"][data-slide="${slide}"]`);
+        if (target) {
+            target.classList.add('active');
+            currentModule = mod;
+            currentSlide = slide;
+        }
+        document.querySelectorAll('.module-tab').forEach(t => t.classList.remove('active'));
+        document.querySelector(`.module-tab[data-module="${mod}"]`).classList.add('active');
+        const slides = getModuleSlides(mod);
+        const total = slides.length;
+        document.getElementById('slideCounter').textContent = `${slide} / ${total}`;
+        const dotsContainer = document.getElementById('slideDots');
+        dotsContainer.innerHTML = '';
+        for (let i = 1; i <= total; i++) {
+            const dot = document.createElement('div');
+            dot.className = 'slide-dot' + (i === slide ? ' active' : '');
+            dot.onclick = () => showSlide(mod, i);
+            dotsContainer.appendChild(dot);
+        }
+        document.getElementById('slideContainer').scrollTop = 0;
+    }
+
+    function navigate(dir) {
+        const slides = getModuleSlides(currentModule);
+        const total = slides.length;
+        let next = currentSlide + dir;
+        if (next < 1) {
+            const prevMod = currentModule - 1;
+            if (prevMod >= 1) {
+                const prevSlides = getModuleSlides(prevMod);
+                showSlide(prevMod, prevSlides.length);
+            }
+            return;
+        }
+        if (next > total) {
+            const nextMod = currentModule + 1;
+            if (nextMod <= totalModules) {
+                showSlide(nextMod, 1);
+            }
+            return;
+        }
+        showSlide(currentModule, next);
+    }
+
+    document.querySelectorAll('.module-tab').forEach(tab => {
+        tab.addEventListener('click', () => {
+            const mod = parseInt(tab.dataset.module);
+            showSlide(mod, 1);
+        });
+    });
+
+    document.addEventListener('keydown', (e) => {
+        if (e.key === 'ArrowRight' || e.key === ' ') { e.preventDefault(); navigate(1); }
+        if (e.key === 'ArrowLeft') { e.preventDefault(); navigate(-1); }
+        const num = parseInt(e.key);
+        if (num >= 1 && num <= totalModules) { showSlide(num, 1); }
+    });
+
+    showSlide(1, 1);
+</script>
+
+</body>
+</html>
